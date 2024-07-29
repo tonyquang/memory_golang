@@ -8,7 +8,9 @@ import (
 )
 
 func Handler(
-	readiness http.HandlerFunc) http.Handler {
+	readiness http.HandlerFunc,
+	routerFunc func(chi.Router),
+) http.Handler {
 	r := chi.NewRouter()
 	// TODO: add middleware here
 	r.Use(
@@ -20,6 +22,7 @@ func Handler(
 	)
 
 	r.Get("/_/ready", readiness)
+	r.Group(routerFunc)
 
 	return r
 }

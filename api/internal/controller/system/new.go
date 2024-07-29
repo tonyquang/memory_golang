@@ -10,6 +10,9 @@ import (
 type Controller interface {
 	// CheckReadiness checks if the system is ready for operation or not
 	CheckReadiness(ctx context.Context) error
+	MonitorMap()
+	MonitorChannel()
+	MonitorGoroutine()
 }
 
 // New initializes a new Controller instance and returns it

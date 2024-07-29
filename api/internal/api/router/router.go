@@ -6,6 +6,8 @@ import (
 
 	"memory_golang/api/internal/api/rest/health"
 	"memory_golang/api/pkg/httpserv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // Router defines the routes & handlers of the app
@@ -20,5 +22,24 @@ type Router struct {
 func (rtr Router) Handler() http.Handler {
 	return httpserv.Handler(
 		rtr.healthRESTHandler.CheckReadiness(),
+		rtr.routes,
 	)
+}
+
+func (rtr Router) routes(r chi.Router) {
+	r.Group(rtr.public)
+}
+
+func (rtr Router) public(r chi.Router) {
+	prefix := "/api/public"
+
+	// v1
+	r.Group(func(r chi.Router) {
+		prefix = prefix + "/v1"
+		r.Group(func(r chi.Router) {
+			r.Get(prefix+"/channel", rtr.healthRESTHandler.CallLeakChannel())
+			r.Get(prefix+"/goroutine", rtr.healthRESTHandler.CallLeakGoRoutine())
+			r.Get(prefix+"/map", rtr.healthRESTHandler.CallLeakMap())
+		})
+	})
 }
