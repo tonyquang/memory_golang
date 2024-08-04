@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"memory_golang/api/internal/api/router"
-	"memory_golang/api/internal/config"
-	"memory_golang/api/internal/controller/system"
 	"os"
 	"strconv"
 	"strings"
+
+	"memory_golang/api/internal/api/router"
+	"memory_golang/api/internal/config"
+	"memory_golang/api/internal/controller/system"
+	"memory_golang/api/internal/controller/user"
 
 	"github.com/friendsofgo/errors"
 
@@ -69,7 +71,7 @@ func run(ctx context.Context) error {
 
 	rtr, _ := initRouter(ctx, conn)
 
-	log.Println("App initialization completed")
+	log.Println("App initialization completed :3000")
 
 	httpserv.NewServer(rtr.Handler()).Start(ctx)
 
@@ -79,10 +81,12 @@ func run(ctx context.Context) error {
 func initRouter(
 	ctx context.Context,
 	dbConn pg.BeginnerExecutor) (router.Router, error) {
+	registry := repository.New(dbConn)
 	return router.New(
 		ctx,
 		strings.Split(os.Getenv("CORS_ALLOWED_ORIGINS"), ","),
 		os.Getenv("GQL_INTROSPECTION_ENABLED") == "true",
-		system.New(repository.New(dbConn)),
+		system.New(registry),
+		user.New(registry),
 	), nil
 }
