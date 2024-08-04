@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   pg:
     container_name: ${PROJECT_NAME}-db-${CONTAINER_SUFFIX:-local}

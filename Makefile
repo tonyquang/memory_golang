@@ -1,5 +1,5 @@
 # One file to rule to them all
-
+include api/app.env
 ifndef PROJECT_NAME
 PROJECT_NAME := memory_golang
 endif
@@ -51,13 +51,22 @@ api-build-binaries:
 		go build -mod=vendor -v -a -i -o binaries/multipartitionconsumer ./cmd/multipartitionconsumer && \
 		go build -mod=vendor -v -a -i -o binaries/singlepartitionconsumer ./cmd/singlepartitionconsumer && \
 		go build -mod=vendor -v -a -i -o binaries/datagen ./cmd/datagen "
+
+api-build:
+	${API_COMPOSE} sh -c "\
+    		go clean -mod=vendor -i -x -cache && \
+    		go build -mod=vendor -v -a -o binaries/serverd ./cmd/serverd"
+
+api-build-docker:
+	${DOCKER_BIN} build -f build/api.Dockerfile -t memorygolang:latest .
+
 api-update-vendor:
 	@${API_COMPOSE} sh -c "go mod tidy -compat=1.17 && go mod vendor"
 api-gen-mocks:
 	@${API_COMPOSE} sh -c "mockery --dir internal/controller --all --recursive --inpackage"
 	@${API_COMPOSE} sh -c "mockery --dir internal/repository --all --recursive --inpackage"
 api-dbmigrate:
-	${COMPOSE} run --rm db-migrate sh -c './migrate -path /api-migrations -database $$DB_URL up'
+	${COMPOSE} run db-migrate sh -c './migrate -path /api-migrations -database $$DB_URL up'
 api-dbdrop:
 	${COMPOSE} run --rm db-migrate sh -c './migrate -path /api-migrations -database $$DB_URL drop'
 api-dbredo: api-dbdrop api-dbmigrate
